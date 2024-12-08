@@ -1,6 +1,6 @@
 import pytest
 
-from src.rb_tree import *
+from src.core.rb_tree import *
 
 def insert_test():
     pass
