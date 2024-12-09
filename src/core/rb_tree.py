@@ -6,49 +6,61 @@ RED = 'red'
 
 
 class Node:
-    def __init__(self, full_name, key, color, parent=None):
-        self.key = key
+    def __init__(self, full_name, math_score, cs_score, rus_score, parent=None):
         self.full_name = full_name
+        self.math_score = math_score
+        self.cs_score = cs_score
+        self.rus_score = rus_score
+        self.total_score = math_score + cs_score + rus_score
         self.left = None
         self.right = None
-        self.color = color
+        self.color = RED
         self.parent = parent
 
     def __str__(self):
-        left = self.left.key if self.left else None
-        right = self.right.key if self.right else None
-        parent = self.parent.key if self.parent else None
-        return 'key: {}, left: {}, right: {}, color: {}, parent: {}'.format(
-            self.key, left, right, self.color, parent)
+        left = self.left.full_name if self.left else None
+        right = self.right.full_name if self.right else None
+        parent = self.parent.full_name if self.parent else None
+        return f"Name: {self.full_name}, Total: {self.total_score}, Math: {self.math_score}, CS: {self.cs_score}, Russian: {self.rus_score}, Parent: {parent}"
 
 
 class RBTree:
     def __init__(self):
         self.root = None
-        self.name_to_key = {}
+        self.name_to_key = {}  # �������⥫�� ᫮���� ��� ������஢���� �� full_name
 
-    def insert(self, full_name, key):
+    def insert(self, full_name, math_score, cs_score, rus_score):
+        key = (-math_score, -cs_score, -rus_score, -math_score - cs_score - rus_score)  # ��� �ਮ��⭮� ���஢��
+        if full_name in self.name_to_key:
+            existing_key = self.name_to_key[full_name]
+            node = self.search_by_key(existing_key)
+            if node:
+                node.math_score = math_score
+                node.cs_score = cs_score
+                node.rus_score = rus_score
+                node.total_score = math_score + cs_score + rus_score
+            return
+
+        new_node = Node(full_name, math_score, cs_score, rus_score)
         if not self.root:
-            self.root = Node(full_name, key, BLACK)
-
+            new_node.color = BLACK
+            self.root = new_node
         else:
             current = self.root
             while True:
                 if key < current.key:
                     if not current.left:
-                        new_node = Node(full_name, key, RED, parent=current)
                         current.left = new_node
+                        new_node.parent = current
                         break
                     current = current.left
                 else:
                     if not current.right:
-                        new_node = Node(full_name, key, RED, parent=current)
                         current.right = new_node
+                        new_node.parent = current
                         break
                     current = current.right
-
             self.fix_tree(new_node)
-
         self.name_to_key[full_name] = key
 
     def fix_tree(self, node):
@@ -100,7 +112,7 @@ class RBTree:
 
         new_node.left = node
         node.parent = new_node
-        new_node.parent = parent  # Устанавливаем родителя для нового узла
+        new_node.parent = parent  # ��⠭�������� த�⥫� ��� ������ 㧫�
 
         if not parent:
             self.root = new_node
@@ -123,7 +135,7 @@ class RBTree:
 
         new_node.right = node
         node.parent = new_node
-        new_node.parent = parent  # Устанавливаем родителя для нового узла
+        new_node.parent = parent  # ��⠭�������� த�⥫� ��� ������ 㧫�
 
         if not parent:
             self.root = new_node
@@ -191,6 +203,7 @@ class RBTree:
             successor = self._minimum(node.right)
             node.key = successor.key
             node.full_name = successor.full_name
+            # ������塞 ᫮���� �� ������ full_name
             self.name_to_key[node.full_name] = node.key
             node = successor
 
@@ -269,6 +282,6 @@ class RBTree:
         with open(filename, 'w', encoding='utf-8') as file:
             index = 1
             for node in sorted_nodes:
-                line = f"{index}) {node.full_name} - {node.key}\n"
+                line = f"{index}) {node.full_name} - Math: {node.math_score} , CS: {node.cs_score}, Russian: {node.rus_score}\n"
                 file.write(line)
                 index += 1

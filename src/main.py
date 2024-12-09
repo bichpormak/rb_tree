@@ -13,7 +13,7 @@ def main():
 
     rb_tree = RBTree()
     for pupil in pupils:
-        rb_tree.insert(pupil[0], pupil[1])
+        rb_tree.insert(pupil[0], pupil[1], pupil[2], pupil[3])
     run(pupils, rb_tree)
 
     for index, node in enumerate(pupils):

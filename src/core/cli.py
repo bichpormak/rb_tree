@@ -9,35 +9,23 @@ def run(pupils: list, rb_tree: RBTree):
             print_help()
 
         elif choice == '1':
-            print("Enter  (full name - total points). Press Esc to complete entry.")
             try:
-                pupil = input("Enter data: ")
+                full_name = input("Enter full name: ")
+                math_score = int(input("Enter Math score: "))
+                cs_score = int(input("Enter CS score: "))
+                rus_score = int(input("Enter Russian score: "))
+                pupils.append((full_name, math_score, cs_score, rus_score))
+                rb_tree.insert(full_name, math_score, cs_score, rus_score)
+                rb_tree.save_sorted_to_file('core/pupils.txt')
 
-                if pupil.strip() == "":
-                    continue
-                pupil = pupil.strip().split("-")
-                if len(pupil) != 2:
-                    print("Invalid format. Please use 'full name - total points'")
-                    continue
-                pupil[0] = pupil[0].strip()
-                pupil[1] = pupil[1].strip()
-                try:
-                    pupil[1] = int(pupil[1])
-                except ValueError:
-                    print("Invalid number of points. Please enter an integer.")
-            except EOFError:
-                continue
-            except KeyboardInterrupt:
-                continue
-
-            pupils.append(pupil)
-            rb_tree.insert(pupil[0], pupil[1])
-            rb_tree.save_sorted_to_file('core/pupils.txt')
-
-            save_to_file({
-                "full_name": pupil[0],
-                "total_points": pupil[1]
-            })
+                save_to_file({
+                    "full_name": full_name,
+                    "math_score": math_score,
+                    "cs_score": cs_score,
+                    "rus_score": rus_score
+                })
+            except ValueError:
+                print("Invalid input. Please enter numbers for scores.")
 
         elif choice == '2':
             full_name = input("Enter full name: ")
@@ -56,9 +44,10 @@ def run(pupils: list, rb_tree: RBTree):
         elif choice == '4':
             try:
                 rb_tree.save_sorted_to_file('core/pupils.txt')
-                with open('core/pupils.txt', 'r', encoding='utf-8') as file:
-                    for line in file:
-                        print(line, end='')
+                sorted_nodes = rb_tree.reverse_inorder_traversal(rb_tree.root)
+                for index, node in enumerate(sorted_nodes, start=1):
+                    print(
+                        f"{index}) {node.full_name} - Total: {node.total_score} (Math: {node.math_score}, CS: {node.cs_score}, Russian: {node.rus_score})")
             except FileNotFoundError:
                 print("The path entered does not exist.")
 
