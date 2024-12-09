@@ -16,27 +16,26 @@ def save_to_file(data, filename='visualization/data.json'):
 
 def remove_from_file(full_name, filename='visualization/data.json'):
     if not os.path.exists(filename):
-        print(f"Файл {filename} не существует.")
+        print(f"File {filename} does not exist")
         return
 
     with open(filename, 'r', encoding='utf-8') as file:
         try:
             data = json.load(file)
         except json.JSONDecodeError:
-            print(f"Файл {filename} пуст или содержит неверный формат JSON.")
+            print(f"File {filename} is empty or contains wrong format JSON")
             return
 
-    # Фильтруем данные, исключая записи с указанным full_name (без учета регистра)
     updated_data = [pupil for pupil in data if pupil.get("full_name", "").lower() != full_name.lower()]
 
     if len(updated_data) == len(data):
-        print(f"Узел с именем '{full_name}' не найден в файле.")
+        print(f"Node with name '{full_name}' is not found in the file.")
         return
 
     with open(filename, 'w', encoding='utf-8') as file:
         json.dump(updated_data, file, ensure_ascii=False, indent=4)
 
-    print(f"Узел с именем '{full_name}' успешно удалён из файла.")
+    print(f"Node with name '{full_name}' successfully deleted from the file")
 
 
 def load_data_from_json(file_path):

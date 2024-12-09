@@ -1,6 +1,5 @@
 import graphviz
 
-from src.core.process_input import *
 from src.core.rb_tree import *
 from src.core.working_with_json import *
 from src.visualization.visualization import *
@@ -19,13 +18,10 @@ def main():
 
     for index, node in enumerate(pupils):
         dot = graphviz.Digraph()
-        rb_tree.insert(node[0], node[1])
         breadth_first_search(rb_tree.root, dot)
         dot.render('visualization/files_for_visualization/g{}.gv'.format(index))
 
-
+    save_visualization()
 
 if __name__ == '__main__':
-    listener_thread = threading.Thread(target=start_listener, daemon=True)
-    listener_thread.start()
     main()

@@ -18,12 +18,14 @@ class Node:
         left = self.left.key if self.left else None
         right = self.right.key if self.right else None
         parent = self.parent.key if self.parent else None
-        return 'key: {}, left: {}, right: {}, color: {}, parent: {}'.format(self.key, left, right, self.color, parent)
+        return 'key: {}, left: {}, right: {}, color: {}, parent: {}'.format(
+            self.key, left, right, self.color, parent)
 
 
 class RBTree:
     def __init__(self):
         self.root = None
+        self.name_to_key = {}
 
     def insert(self, full_name, key):
         if not self.root:
@@ -31,47 +33,42 @@ class RBTree:
 
         else:
             current = self.root
-            while current:
+            while True:
                 if key < current.key:
                     if not current.left:
-                        new_node = Node(full_name, key, RED, parent = current)
+                        new_node = Node(full_name, key, RED, parent=current)
                         current.left = new_node
                         break
-
                     current = current.left
-
                 else:
                     if not current.right:
-                        new_node = Node(full_name, key, RED, parent = current)
+                        new_node = Node(full_name, key, RED, parent=current)
                         current.right = new_node
                         break
-
                     current = current.right
 
             self.fix_tree(new_node)
 
+        self.name_to_key[full_name] = key
 
     def fix_tree(self, node):
-
         while node.parent and node.parent.color == RED:
             grandparent = node.parent.parent
             if node.parent == grandparent.left:
                 uncle = grandparent.right
 
-                if not uncle or uncle.color == BLACK:
-                    if node == node.parent.right:
-                        node = node.parent
-                        self.left_rotate(node)
-                    self.right_rotate(node)
-                    node.parent.color = BLACK
-                    grandparent.color = RED
-
-                else:
+                if uncle and uncle.color == RED:
                     uncle.color = BLACK
                     node.parent.color = BLACK
                     grandparent.color = RED
-
-
+                    node = grandparent
+                else:
+                    if node == node.parent.right:
+                        node = node.parent
+                        self.left_rotate(node)
+                    node.parent.color = BLACK
+                    grandparent.color = RED
+                    self.right_rotate(grandparent)
             else:
                 uncle = grandparent.left
                 if uncle and uncle.color == RED:
@@ -79,22 +76,23 @@ class RBTree:
                     uncle.color = BLACK
                     grandparent.color = RED
                     node = grandparent
-
                 else:
                     if node == node.parent.left:
                         node = node.parent
                         self.right_rotate(node)
-
                     node.parent.color = BLACK
                     grandparent.color = RED
                     self.left_rotate(grandparent)
 
-        if self.root.color == RED:
+        if self.root and self.root.color == RED:
             self.root.color = BLACK
 
     def left_rotate(self, node):
         new_node = node.right
         parent = node.parent
+
+        if new_node is None:
+            return
 
         node.right = new_node.left
         if node.right:
@@ -102,10 +100,10 @@ class RBTree:
 
         new_node.left = node
         node.parent = new_node
+        new_node.parent = parent  # Устанавливаем родителя для нового узла
 
         if not parent:
             self.root = new_node
-
         else:
             if parent.left == node:
                 parent.left = new_node
@@ -116,40 +114,41 @@ class RBTree:
         new_node = node.left
         parent = node.parent
 
+        if new_node is None:
+            return
+
         node.left = new_node.right
         if node.left:
             node.left.parent = node
 
         new_node.right = node
         node.parent = new_node
+        new_node.parent = parent  # Устанавливаем родителя для нового узла
 
         if not parent:
             self.root = new_node
-
         else:
             if parent.left == node:
                 parent.left = new_node
             else:
                 parent.right = new_node
 
+    def search_by_key(self, key):
+        current = self.root
+        while current:
+            if key < current.key:
+                current = current.left
+            elif key > current.key:
+                current = current.right
+            else:
+                return current
+        return None
+
     def search_by_name(self, full_name):
-        full_name_lower = full_name.lower()
-
-        def _search(node):
-            if node is None:
-                return None
-            # Проверяем текущий узел
-            if node.full_name.lower() == full_name_lower:
-                return node
-            # Рекурсивно ищем в левом поддереве
-            left_result = _search(node.left)
-            if left_result:
-                return left_result
-            # Рекурсивно ищем в правом поддереве
-            return _search(node.right)
-
-        return _search(self.root)
-
+        key = self.name_to_key.get(full_name)
+        if key is not None:
+            return self.search_by_key(key)
+        return None
 
     def reverse_inorder_traversal(self, node, result=None):
         if result is None:
@@ -161,18 +160,17 @@ class RBTree:
         return result
 
     def delete_by_name(self, full_name):
-        node_to_delete = self.search_by_name(full_name)
-        if node_to_delete:
-            self._delete_node(node_to_delete)
+        key = self.name_to_key.get(full_name)
+        if key is not None:
+            self._delete_node_by_key(key)
+            del self.name_to_key[full_name]
 
     def _minimum(self, node):
-        # Находим узел с минимальным ключом в поддереве node
         while node.left:
             node = node.left
         return node
 
     def _replace_node_in_parent(self, node, new_node):
-        # Заменяет node на new_node у родителя
         if node.parent:
             if node == node.parent.left:
                 node.parent.left = new_node
@@ -183,34 +181,32 @@ class RBTree:
         if new_node:
             new_node.parent = node.parent
 
+    def _delete_node_by_key(self, key):
+        node = self.search_by_key(key)
+        if node:
+            self._delete_node(node)
+
     def _delete_node(self, node):
-        # Классический алгоритм удаления из КЧ-дерева
-        # Если у удаляемого узла два потомка, меняем его на преемника
         if node.left and node.right:
             successor = self._minimum(node.right)
-            # Переносим данные преемника в удаляемый узел
             node.key = successor.key
             node.full_name = successor.full_name
+            self.name_to_key[node.full_name] = node.key
             node = successor
 
-        # Теперь node имеет не более одного ребенка
         child = node.right if node.right else node.left
-
         original_color = node.color
         if child:
             self._replace_node_in_parent(node, child)
-            if node.color == BLACK:
+            if original_color == BLACK:
                 self._fix_deletion(child)
         else:
-            # Нет детей
-            if node.color == BLACK:
+            if original_color == BLACK:
                 self._fix_deletion(node)
             self._replace_node_in_parent(node, None)
 
     def _fix_deletion(self, node):
-        # Восстанавливаем свойства КЧ-дерева после удаления
-        # node может быть "пустой" узел (виртуальный), используем проверку node != self.root
-        while node != self.root and (not node or node.color == BLACK):
+        while node != self.root and (node is None or node.color == BLACK):
             if node == node.parent.left:
                 sibling = node.parent.right
                 if sibling and sibling.color == RED:
@@ -218,16 +214,17 @@ class RBTree:
                     node.parent.color = RED
                     self.left_rotate(node.parent)
                     sibling = node.parent.right
-                if (not sibling.left or sibling.left.color == BLACK) and (
-                        not sibling.right or sibling.right.color == BLACK):
+                if ((sibling.left is None or sibling.left.color == BLACK) and
+                        (sibling.right is None or sibling.right.color == BLACK)):
                     if sibling:
                         sibling.color = RED
                     node = node.parent
                 else:
-                    if not sibling.right or sibling.right.color == BLACK:
+                    if sibling.right is None or sibling.right.color == BLACK:
                         if sibling.left:
                             sibling.left.color = BLACK
-                        sibling.color = RED
+                        if sibling:
+                            sibling.color = RED
                         self.right_rotate(sibling)
                         sibling = node.parent.right
                     if sibling:
@@ -244,16 +241,17 @@ class RBTree:
                     node.parent.color = RED
                     self.right_rotate(node.parent)
                     sibling = node.parent.left
-                if (not sibling.left or sibling.left.color == BLACK) and (
-                        not sibling.right or sibling.right.color == BLACK):
+                if ((sibling.left is None or sibling.left.color == BLACK) and
+                        (sibling.right is None or sibling.right.color == BLACK)):
                     if sibling:
                         sibling.color = RED
                     node = node.parent
                 else:
-                    if not sibling.left or sibling.left.color == BLACK:
+                    if sibling.left is None or sibling.left.color == BLACK:
                         if sibling.right:
                             sibling.right.color = BLACK
-                        sibling.color = RED
+                        if sibling:
+                            sibling.color = RED
                         self.left_rotate(sibling)
                         sibling = node.parent.left
                     if sibling:

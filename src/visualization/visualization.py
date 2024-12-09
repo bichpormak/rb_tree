@@ -19,11 +19,12 @@ def breadth_first_search(root, dot):
         queue = tmp_queue
 
 
-merger = PdfMerger()
-pdf_files = sorted(glob.glob("files_for_visualization/*.pdf"))
+def save_visualization():
+    merger = PdfMerger()
+    pdf_files = sorted(glob.glob("visualization/files_for_visualization/*.pdf"))
 
-for pdf in pdf_files:
-    merger.append(pdf)
+    for pdf in pdf_files:
+        merger.append(pdf)
 
-merger.write("visualization/visualization.pdf")
-merger.close()
+    merger.write("visualization/visualization.pdf")
+    merger.close()

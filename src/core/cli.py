@@ -1,5 +1,4 @@
 from src.core.rb_tree import *
-from src.core.process_input import *
 from src.core.working_with_json import *
 
 def run(pupils: list, rb_tree: RBTree):
@@ -11,18 +10,34 @@ def run(pupils: list, rb_tree: RBTree):
 
         elif choice == '1':
             print("Enter  (full name - total points). Press Esc to complete entry.")
-            while not stop_event.is_set():
-                pupil = get_information()
-                if pupil is None:
-                    break
+            try:
+                pupil = input("Enter data: ")
 
-                pupils.append(pupil)
+                if pupil.strip() == "":
+                    continue
+                pupil = pupil.strip().split("-")
+                if len(pupil) != 2:
+                    print("Invalid format. Please use 'full name - total points'")
+                    continue
+                pupil[0] = pupil[0].strip()
+                pupil[1] = pupil[1].strip()
+                try:
+                    pupil[1] = int(pupil[1])
+                except ValueError:
+                    print("Invalid number of points. Please enter an integer.")
+            except EOFError:
+                continue
+            except KeyboardInterrupt:
+                continue
 
-                save_to_file({
-                    "full_name": pupil[0],
-                    "total_points": pupil[1]
-                })
-                rb_tree.save_sorted_to_file('core/pupils.txt')
+            pupils.append(pupil)
+            rb_tree.insert(pupil[0], pupil[1])
+            rb_tree.save_sorted_to_file('core/pupils.txt')
+
+            save_to_file({
+                "full_name": pupil[0],
+                "total_points": pupil[1]
+            })
 
         elif choice == '2':
             full_name = input("Enter full name: ")
@@ -49,7 +64,7 @@ def run(pupils: list, rb_tree: RBTree):
 
         elif choice == '5':
             print("Program completed )")
-            exit(0)
+            break
 
         else:
             print("Invalid input...")
