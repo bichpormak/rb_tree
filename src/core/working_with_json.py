@@ -1,41 +1,32 @@
-import os
-import json
+# src/core/working_with_json.py
 
-def save_to_file(data, filename='visualization/data.json'):
+import json
+import os
+
+def save_to_file(pupil_data, filename='visualization/data.json'):
     if os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as file:
-            existing_data = json.load(file)
+            data = json.load(file)
     else:
-        existing_data = []
+        data = []
 
-    existing_data.append(data)
+    data.append(pupil_data)
 
     with open(filename, 'w', encoding='utf-8') as file:
-        json.dump(existing_data, file, ensure_ascii=False, indent=4)
-
+        json.dump(data, file, ensure_ascii=False, indent=4)
 
 def remove_from_file(full_name, filename='visualization/data.json'):
     if not os.path.exists(filename):
-        print(f"File {filename} does not exist")
+        print(f"Файл {filename} не существует.")
         return
 
     with open(filename, 'r', encoding='utf-8') as file:
-        try:
-            data = json.load(file)
-        except json.JSONDecodeError:
-            print(f"File {filename} is empty or contains wrong format JSON")
-            return
+        data = json.load(file)
 
-    updated_data = [pupil for pupil in data if pupil.get("full_name", "").lower() != full_name.lower()]
-
-    if len(updated_data) == len(data):
-        print(f"Node with name '{full_name}' is not found in the file.")
-        return
+    data = [pupil for pupil in data if pupil['full_name'] != full_name]
 
     with open(filename, 'w', encoding='utf-8') as file:
-        json.dump(updated_data, file, ensure_ascii=False, indent=4)
-
-    print(f"Node with name '{full_name}' successfully deleted from the file")
+        json.dump(data, file, ensure_ascii=False, indent=4)
 
 
 def load_data_from_json(file_path):

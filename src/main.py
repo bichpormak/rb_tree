@@ -6,14 +6,14 @@ from src.visualization.visualization import *
 from src.core.cli import run
 
 def main():
-    try:
-        pupils = load_data_from_json("visualization/data.json")
-    except FileNotFoundError:
-        pupils = []
-
+    # try:
+    #     pupils = load_data_from_json("visualization/data.json")
+    # except FileNotFoundError:
+    #     pupils = []
+    pupils = []
     rb_tree = RBTree()
-    for pupil in pupils:
-        rb_tree.insert(pupil[0], pupil[1], pupil[2], pupil[3])
+    # for pupil in pupils:
+    #     rb_tree.insert(pupil[0], pupil[1], pupil[2], pupil[3])
     run(pupils, rb_tree)
 
     for index, node in enumerate(pupils):
